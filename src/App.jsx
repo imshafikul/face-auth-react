@@ -1,9 +1,14 @@
 import { useState } from "react";
 const faceio = new faceIO("fioaddb4");
-
+import "react-toastify/dist/ReactToastify.css";
+import { ToastContainer } from "react-toastify";
 import "./App.css";
+import { toastMessage } from "./utils/toastMessage";
+import { SignInInfo } from "./components/SignInInfo";
 
 function App() {
+  const [signinInfo, setSigninInfo] = useState(null);
+
   const handleEnrollment = async () => {
     try {
       const res = await faceio.enroll({
@@ -14,13 +19,15 @@ function App() {
         },
       });
 
-      console.log(`
-        Unique Facial ID: ${res.facialId}
-        Enrollment Date: ${res.timestamp}
-        Gender: ${res?.details?.gender}
-        Age: ${res?.details?.age}
-      `);
-    } catch (error) {}
+      setSigninInfo({
+        ...res,
+      });
+    } catch (error) {
+      toastMessage({
+        type: "error",
+        message: "Failed entrollment process",
+      });
+    }
   };
 
   const handleSignin = async () => {
@@ -29,12 +36,14 @@ function App() {
         locale: "auto",
       });
 
-      console.log(`
-        Unique Facial ID: ${res.facialId}
-        Payload: ${res.payload}
-      `);
+      setSigninInfo({
+        ...res,
+      });
     } catch (error) {
-      console.log(error);
+      toastMessage({
+        type: "error",
+        message: "Authentication failed",
+      });
     }
   };
 
@@ -43,6 +52,8 @@ function App() {
       <h1>Facial authentication</h1>
       <button onClick={handleEnrollment}>Signup</button>{" "}
       <button onClick={handleSignin}>Signin</button>
+      <ToastContainer />
+      {signinInfo && <SignInInfo {...signinInfo} />}
     </div>
   );
 }
